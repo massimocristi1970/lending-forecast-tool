@@ -21,6 +21,7 @@ initial_lending = st.sidebar.number_input(
     "Initial Monthly Lending Volume (£)", 
     value=2_000_000, 
     step=100_000,
+    min_value=1,
     help="Starting monthly lending amount"
 )
 
@@ -260,7 +261,13 @@ with col2:
     )
 
 with col3:
-    avg_growth = ((df['Lending Volume (£)'].iloc[-1] / df['Lending Volume (£)'].iloc[0]) ** (1/months) - 1) * 100 if months > 1 else 0
+    # Safely calculate average growth rate, avoiding division by zero
+    initial_volume = df['Lending Volume (£)'].iloc[0]
+    final_volume = df['Lending Volume (£)'].iloc[-1]
+    if months > 1 and initial_volume > 0:
+        avg_growth = ((final_volume / initial_volume) ** (1/months) - 1) * 100
+    else:
+        avg_growth = 0
     st.metric(
         "Avg Monthly Growth", 
         f"{avg_growth:.1f}%",
